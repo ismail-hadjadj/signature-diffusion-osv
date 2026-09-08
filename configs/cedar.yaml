@@ -1,0 +1,59 @@
+# Config for CEDAR Offline Signature Verification & Diffusion Hard Negative Synthesis
+dataset:
+  name: "CEDAR"
+  data_dir: "data/CEDAR"
+  total_writers: 55
+  genuines_per_writer: 24
+  forgeries_per_writer: 24
+  num_folds: 5
+  seed: 42
+
+image:
+  height: 224
+  width: 224
+  channels: 3
+  invert: true
+  normalize: true
+
+preprocessing:
+  skeletonize:
+    method: "zhang_suen" # Options: zhang_suen, guo_hall, morphological
+    curvature_kernel_size: 5
+    tangent_smoothing: 3
+  kinematic_tremor:
+    sigma_lognormal:
+      mu: 0.15
+      sigma: 0.35
+      tremor_amplitude: 0.08
+      frequency_range: [8.0, 14.0] # Hz physiological tremor
+      hesitation_probability: 0.25
+      hesitation_radius: 4
+
+diffusion:
+  latent_dim: 64
+  controlnet_channels: [64, 128, 256]
+  timesteps: 1000
+  beta_schedule: "cosine"
+  batch_size: 16
+  learning_rate: 1.0e-4
+  epochs: 50
+  save_dir: "checkpoints/diffusion_cedar"
+
+verifier:
+  model_type: "siamese_vit"
+  backbone: "vit_tiny_patch16_224"
+  embedding_dim: 128
+  dropout: 0.1
+  batch_size: 32
+  learning_rate: 8.0e-5
+  epochs: 15
+  save_dir: "checkpoints/verifier_cedar"
+
+loss:
+  type: "adaptive_margin"
+  m_min: 0.60
+  m_max: 1.10
+  skilled_margin_factor: 0.95
+  diffusion_margin_factor: 1.00
+  random_margin_factor: 1.05
+  label_smoothing: 0.05

@@ -1,0 +1,60 @@
+# Config for ICDAR 2011 SigComp Offline Benchmark & Diffusion Hard Negative Synthesis
+dataset:
+  name: "ICDAR2011"
+  data_dir: "data/ICDAR2011"
+  train_writers: 10 # SigComp standard fixed training split
+  test_writers: 54  # SigComp standard fixed testing split
+  script: "Dutch"
+  scripts:
+    - "Dutch"
+  positive_pairs_per_writer: 50
+  seed: 42
+
+image:
+  height: 224
+  width: 224
+  channels: 3
+  invert: true
+  normalize: true
+
+preprocessing:
+  skeletonize:
+    method: "zhang_suen"
+    curvature_kernel_size: 5
+    tangent_smoothing: 3
+  kinematic_tremor:
+    sigma_lognormal:
+      mu: 0.18
+      sigma: 0.40
+      tremor_amplitude: 0.10
+      frequency_range: [8.0, 14.0]
+      hesitation_probability: 0.30
+      hesitation_radius: 5
+
+diffusion:
+  latent_dim: 64
+  controlnet_channels: [64, 128, 256]
+  timesteps: 1000
+  beta_schedule: "cosine"
+  batch_size: 16
+  learning_rate: 1.0e-4
+  epochs: 60
+  save_dir: "checkpoints/diffusion_icdar2011"
+
+verifier:
+  model_type: "siamese_vit"
+  backbone: "vit_tiny_patch16_224"
+  embedding_dim: 128
+  dropout: 0.1
+  batch_size: 32
+  learning_rate: 1.0e-4
+  epochs: 10
+  save_dir: "checkpoints/verifier_icdar2011"
+
+loss:
+  type: "adaptive_margin"
+  m_min: 0.80
+  m_max: 1.30
+  skilled_margin_factor: 1.00
+  diffusion_margin_factor: 1.00
+  random_margin_factor: 1.10
